@@ -57,7 +57,7 @@ protected:
 
 };
 
-
+ 
 class ProductBookParser : public ProductParser
 {
 public:

@@ -9,6 +9,8 @@
 #include "db_parser.h"
 #include "product_parser.h"
 #include "util.h"
+#include "mydatastore.h"
+#include <queue>
 
 using namespace std;
 struct ProdNameSorter {
@@ -29,7 +31,7 @@ int main(int argc, char* argv[])
      * Declare your derived DataStore object here replacing
      *  DataStore type to your derived type
      ****************/
-    DataStore ds;
+    MyDataStore ds;
 
 
 
@@ -60,6 +62,32 @@ int main(int argc, char* argv[])
     cout << "  BUYCART username                   " << endl;
     cout << "  QUIT new_db_filename               " << endl;
     cout << "====================================" << endl;
+
+    // set<string> test_set1;
+    // set<string> test_set2;
+    // test_set1.insert("1");
+    // test_set1.insert("2");
+    // test_set1.insert("3");
+    // test_set1.insert("5");
+    // test_set2.insert("1");
+    // test_set2.insert("2");
+    // test_set2.insert("4");
+    // test_set2.insert("6");
+    // set<string> outset = setIntersection(test_set1, test_set2);
+    // for (set<string>::iterator it=outset.begin(); it!=outset.end(); ++it){
+    //     cout << " " << (*it) << endl;
+    // }
+
+
+
+
+    // for (unsigned int i=0; i<ds.product_list.size(); i++){
+    //     set<string> tmp = ds.product_list[i]->keywords();
+    //     cout << ds.product_list[i]->getName() << endl;
+    //     for (set<string>::iterator it=tmp.begin(); it!=tmp.end(); ++it){
+    //         cout << " " << (*it) << endl;
+    //     }
+    // }
 
     vector<Product*> hits;
     bool done = false;
@@ -100,9 +128,69 @@ int main(int argc, char* argv[])
                 done = true;
             }
 	    /* Add support for other commands here */
+            else if (cmd == "ADD"){
+                int search_size = ds.get_search_size();
+                string cmd2;
+                if (ss>>cmd2){
+                    cmd2 = convToLower(cmd2);
+                    if (!ds.user_check(cmd2)){
+                        cout << "Invalid request" << endl;
+                        continue;
+                    }
+                    int cmd3;
+                    if (ss>>cmd3){
+                        if (cmd3 <0 || cmd3>search_size){
+                            cout << "Invalid request" << endl;
+                            continue;
+                        }
+                        ds.add_to_cart(cmd2, cmd3);
+                    }
+                    else{
+                        cout << "Invalid request" << endl;
+                    }
+                }
+                else{
+                    cout << "Invalid request" << endl;
+                }
+            }
 
+            else if (cmd == "VIEWCART"){
+                string cmd2;
+                if (ss>>cmd2){
+                    cmd2 = convToLower(cmd2);
+                    if (!ds.user_check(cmd2)){
+                        cout << "Invalid username" << endl;
+                        continue;
+                    }
+                    queue<Product*> user_queue = ds.get_cart(cmd2);
+                    if (user_queue.size() == 0){
+                        continue;
+                    }
+                    else{
+                        int index = 1;
+                        while (!user_queue.empty()){
+                            Product* curr_item = user_queue.front();
+                            string tmp_str = curr_item->displayString();
+                            cout << "Item " << index << endl;
+                            cout << tmp_str << endl;
+                            user_queue.pop();
+                            index++;
+                        }
+                    }
+                }
+            }
 
-
+            else if (cmd == "BUYCART"){
+                string cmd2;
+                if (ss>>cmd2){
+                    cmd2 = convToLower(cmd2);
+                    if (!ds.user_check(cmd2)){
+                        cout << "Invalid username" << endl;
+                        continue;
+                    }
+                    ds.buy_cart(cmd2);
+                }
+            }
 
             else {
                 cout << "Unknown command" << endl;
